@@ -1,0 +1,7 @@
+.row-buttons {
+  display: flex;
+}
+
+.row-buttons button:not(:nth-last-child(1)) {
+  margin-right: 5px;
+}
