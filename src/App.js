@@ -3,29 +3,24 @@ import "./index.css";
 
 const COLUMNS = [
   {
-    accessor: "name",
-    caption: "Name",
+    accessor: "firstName",
+    caption: "First Name",
     inputType: "text"
   },
   {
-    accessor: "address",
-    caption: "Address",
+    accessor: "lastName",
+    caption: "Last Name",
     inputType: "text"
   },
   {
-    accessor: "phone",
-    caption: "Phone number",
-    inputType: "tel"
+    accessor: "age",
+    caption: "Age",
+    inputType: "number"
   },
-  {
-    accessor: "postal",
-    caption: "Postal",
-    inputType: "text"
-  }
 ];
 
 const NEW_USER_ID = "new";
-const API_URL = 'http://178.128.196.163:3000/api/records';
+const API_URL = 'https://637acf47702b9830b9f3792a.mockapi.io/users';
 
 const TableRow = memo((props) => {
   const {
@@ -38,6 +33,7 @@ const TableRow = memo((props) => {
     userData: initialData,
     userId
   } = props;
+
   const isNewUser = useMemo(() => userId === NEW_USER_ID, [userId]);
 
   const [dataValues, setDataValues] = useState(
@@ -48,7 +44,7 @@ const TableRow = memo((props) => {
         }, {})
       : initialData
   );
-
+  
   const handleDataValueChange = useCallback((evt) => {
     const { name, value } = evt.target;
     setDataValues((prevValues) => ({ ...prevValues, [name]: value }));
@@ -120,7 +116,6 @@ const App = () => {
   const fetchUsersData = useCallback(async () => {
 		await fetch(API_URL)
 			.then(res => res.json())
-			.then(dataSet => dataSet.filter(dataInstance => dataInstance.hasOwnProperty('data')))
 			.then(usersData => setUsersData(usersData))
 	}, []);
 
@@ -131,7 +126,7 @@ const App = () => {
 
   const fetchNewUsers = useCallback(async (data) => {
   await fetch(API_URL, {
-    method: "PUT",
+    method: "POST",
     body: JSON.stringify(data),
     headers: {
       'Content-Type': 'application/json'
@@ -142,8 +137,8 @@ const App = () => {
 }, []);
 
   const fetchUserEdit = useCallback(async (data) => {
-    await fetch(`${API_URL}/${data._id}`, {
-      method: "POST",
+    await fetch(`${API_URL}/${data.id}`, {
+      method: "PUT",
       body: JSON.stringify(data),
       headers: {
         'Content-Type': 'application/json'
@@ -181,30 +176,18 @@ const App = () => {
 
   const handleUserEditSubmit = useCallback(async (userId, userData, isNewUser) => {
     if (isNewUser) {
-      const newUser = {
-        data: {
-          name: userData.name,
-          address: userData.address,
-          phone: userData.phone,
-          postal: userData.postal,
-        },
-      };
-  
-      await fetchNewUsers(newUser);
+        
+      await fetchNewUsers(userData);
 
       await fetchUsersData()
       setIsUserCreating(false);
     } else {
-      console.log(userData.name)
 
       const editedUser = {
-        _id: userId,
-        data: {
-          name: userData.name,
-          address: userData.address,
-          phone: userData.phone,
-          postal: userData.postal,
-        },
+        id: userId,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        age: userData.age,
       };
 
       await fetchUserEdit(editedUser);
@@ -239,7 +222,7 @@ const App = () => {
               userId={NEW_USER_ID}
             />
           )}
-          {usersData.map(({ _id: userId, ...userData }) => (
+          {usersData.map(({ id: userId, ...userData }) => (
             <TableRow
               key={userId}
               isActionsDisabled={isUserCreating}
@@ -248,7 +231,7 @@ const App = () => {
               onUserEditCancel={handleUserEditCancel}
               onUserEditStart={handleUserEditStart}
               onUserEditSubmit={handleUserEditSubmit}
-              userData={userData.data}
+              userData={userData}
               userId={userId}
             />
           ))}
