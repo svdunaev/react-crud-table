@@ -1,26 +1,8 @@
 import React, { memo, useCallback, useMemo, useState, useEffect } from "react";
 import "./index.css";
-
-const COLUMNS = [
-  {
-    accessor: "firstName",
-    caption: "First Name",
-    inputType: "text"
-  },
-  {
-    accessor: "lastName",
-    caption: "Last Name",
-    inputType: "text"
-  },
-  {
-    accessor: "age",
-    caption: "Age",
-    inputType: "number"
-  },
-];
+import { COLUMNS, API_URL } from './constants';
 
 const NEW_USER_ID = "new";
-const API_URL = 'https://637acf47702b9830b9f3792a.mockapi.io/users';
 
 const TableRow = memo((props) => {
   const {
