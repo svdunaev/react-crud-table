@@ -1,139 +1,152 @@
-import React, { useCallback, useState, useEffect } from "react";
-import "./index.css";
-import { COLUMNS, API_URL, NEW_USER_ID } from './constants';
-import TableRow from './components/table-row';
+import React, { useCallback, useState, useEffect } from 'react'
+import './index.css'
+import { COLUMNS, API_URL, NEW_USER_ID } from './constants'
+import TableRow from './components/table-row'
+import { Wrapper } from './components/wrapper'
+import { Button } from './components/button'
+import styled from 'styled-components'
+
+const Table = styled.table`
+  margin: auto;
+`
 
 const App = () => {
-  const [isUserCreating, setIsUserCreating] = useState(false);
-  const [usersData, setUsersData] = useState([]);
-  const [userIdEditing, setUserIdEditing] = useState(null);
+  const [isUserCreating, setIsUserCreating] = useState(false)
+  const [usersData, setUsersData] = useState([])
+  const [userIdEditing, setUserIdEditing] = useState(null)
 
   const fetchUsersData = useCallback(async () => {
-		await fetch(API_URL)
-			.then(res => res.json())
-			.then(usersData => setUsersData(usersData))
-	}, []);
+    await fetch(API_URL)
+      .then((res) => res.json())
+      .then((usersData) => setUsersData(usersData))
+  }, [])
 
-	useEffect(() => {
-		fetchUsersData();
-	}, [fetchUsersData]);
-
+  useEffect(() => {
+    fetchUsersData()
+  }, [fetchUsersData])
 
   const fetchNewUsers = useCallback(async (data) => {
-  await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify(data),
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  }).catch(() => {
+    await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).catch(() => {
       console.error('oh no')
     })
-}, []);
+  }, [])
 
   const fetchUserEdit = useCallback(async (data) => {
     await fetch(`${API_URL}/${data.id}`, {
-      method: "PUT",
+      method: 'PUT',
       body: JSON.stringify(data),
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
-  }, []);
+  }, [])
 
   const fetchUserDelete = useCallback(async (id) => {
     await fetch(`${API_URL}/${id}`, {
-      method: "DELETE"
+      method: 'DELETE',
     })
   }, [])
 
   const handleUserCreateStart = useCallback(() => {
-    setIsUserCreating(true);
-  }, []);
+    setIsUserCreating(true)
+  }, [])
 
-  const handleUserDelete = useCallback(async (userId) => {
-    await fetchUserDelete(userId);
-    await fetchUsersData();
-  }, [fetchUserDelete, fetchUsersData]);
+  const handleUserDelete = useCallback(
+    async (userId) => {
+      await fetchUserDelete(userId)
+      await fetchUsersData()
+    },
+    [fetchUserDelete, fetchUsersData],
+  )
 
   const handleUserEditCancel = useCallback((userId, isNewUser) => {
     if (isNewUser) {
-      setIsUserCreating(false);
+      setIsUserCreating(false)
     } else {
-      setUserIdEditing(null);
+      setUserIdEditing(null)
     }
-  }, []);
+  }, [])
 
   const handleUserEditStart = useCallback(
     (userId) => setUserIdEditing(userId),
-    []
-  );
+    [],
+  )
 
-  const handleUserEditSubmit = useCallback(async (userId, userData, isNewUser) => {
-    if (isNewUser) {
-        
-      await fetchNewUsers(userData);
+  const handleUserEditSubmit = useCallback(
+    async (userId, userData, isNewUser) => {
+      if (isNewUser) {
+        await fetchNewUsers(userData)
 
-      await fetchUsersData()
-      setIsUserCreating(false);
-    } else {
+        await fetchUsersData()
+        setIsUserCreating(false)
+      } else {
+        const editedUser = {
+          id: userId,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          age: userData.age,
+        }
 
-      const editedUser = {
-        id: userId,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        age: userData.age,
-      };
+        await fetchUserEdit(editedUser)
+        await fetchUsersData()
 
-      await fetchUserEdit(editedUser);
-      await fetchUsersData();
-
-      setUserIdEditing(null);
-    }
-  }, [fetchNewUsers, fetchUsersData, fetchUserEdit]);
+        setUserIdEditing(null)
+      }
+    },
+    [fetchNewUsers, fetchUsersData, fetchUserEdit],
+  )
 
   return (
     <>
-      <button
-        disabled={isUserCreating || userIdEditing}
-        onClick={handleUserCreateStart}
-      >
-        Add new user
-      </button>
-      <table>
-        <thead>
-          <tr>
-            {COLUMNS.map(({ accessor, caption }) => (
-              <th key={accessor}>{caption}</th>
+      <Wrapper>
+        <Button
+          disabled={isUserCreating || userIdEditing}
+          onClick={handleUserCreateStart}
+          className='add'
+        >
+          Add new user
+        </Button>
+        <Table>
+          <thead>
+            <tr>
+              {COLUMNS.map(({ accessor, caption }) => (
+                <th key={accessor}>{caption}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {isUserCreating && (
+              <TableRow
+                isEditing={true}
+                onUserEditCancel={handleUserEditCancel}
+                onUserEditSubmit={handleUserEditSubmit}
+                userId={NEW_USER_ID}
+              />
+            )}
+            {usersData.map(({ id: userId, ...userData }) => (
+              <TableRow
+                key={userId}
+                isActionsDisabled={isUserCreating}
+                isEditing={userId === userIdEditing}
+                onUserDelete={handleUserDelete}
+                onUserEditCancel={handleUserEditCancel}
+                onUserEditStart={handleUserEditStart}
+                onUserEditSubmit={handleUserEditSubmit}
+                userData={userData}
+                userId={userId}
+              />
             ))}
-          </tr>
-        </thead>
-        <tbody>
-          {isUserCreating && (
-            <TableRow
-              isEditing={true}
-              onUserEditCancel={handleUserEditCancel}
-              onUserEditSubmit={handleUserEditSubmit}
-              userId={NEW_USER_ID}
-            />
-          )}
-          {usersData.map(({ id: userId, ...userData }) => (
-            <TableRow
-              key={userId}
-              isActionsDisabled={isUserCreating}
-              isEditing={userId === userIdEditing}
-              onUserDelete={handleUserDelete}
-              onUserEditCancel={handleUserEditCancel}
-              onUserEditStart={handleUserEditStart}
-              onUserEditSubmit={handleUserEditSubmit}
-              userData={userData}
-              userId={userId}
-            />
-          ))}
-        </tbody>
-      </table>
+          </tbody>
+        </Table>
+      </Wrapper>
     </>
-  );
-};
+  )
+}
 
-export default App;
+export default App

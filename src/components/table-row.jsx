@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useMemo, memo } from 'react';
 import { COLUMNS, NEW_USER_ID } from '../constants';
+import { Button } from './button';
+import { Input } from './input';
 
 const TableRow = memo((props) => {
   const {
@@ -52,7 +54,7 @@ const TableRow = memo((props) => {
     <tr>
       {COLUMNS.map(({ accessor, caption, inputType }) => (
         <td key={accessor}>
-          <input
+          <Input
             disabled={!isEditing}
             name={accessor}
             onChange={handleDataValueChange}
@@ -65,21 +67,21 @@ const TableRow = memo((props) => {
       <td className="row-buttons">
         {isEditing ? (
           <>
-            <button disabled={isActionsDisabled} onClick={handleSave}>
+            <Button disabled={isActionsDisabled} onClick={handleSave}>
               Save
-            </button>
-            <button disabled={isActionsDisabled} onClick={handleCancel}>
+            </Button>
+            <Button className='base' disabled={isActionsDisabled} onClick={handleCancel}>
               Cancel
-            </button>
+            </Button>
           </>
         ) : (
           <>
-            <button disabled={isActionsDisabled} onClick={handleEditStart}>
+            <Button disabled={isActionsDisabled} onClick={handleEditStart}>
               Edit
-            </button>
-            <button disabled={isActionsDisabled} onClick={handleDelete}>
+            </Button>
+            <Button className='base' disabled={isActionsDisabled} onClick={handleDelete}>
               Delete
-            </button>
+            </Button>
           </>
         )}
       </td>
