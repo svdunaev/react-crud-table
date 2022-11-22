@@ -18,3 +18,4 @@ export const COLUMNS = [
 
 export const API_URL = 'https://637acf47702b9830b9f3792a.mockapi.io/users';
 
+export const NEW_USER_ID = "new";
